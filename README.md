@@ -1,0 +1,5 @@
+Kaitlyn Freeley, Jazmyn Harris, Natasha Nicholas
+
+HOW TO RUN
+-create virtual environment
+-install pygame, numpy
