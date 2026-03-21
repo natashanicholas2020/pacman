@@ -36,7 +36,7 @@ def create_window():
 
 
 # draws the game background (including pellets, we might want to move the pellets into the rewards file though)
-def draw_maze(screen):
+def draw_maze(screen, draw_pellets=True):
     for r in range(height):
         for c in range(width):
 
@@ -48,6 +48,6 @@ def draw_maze(screen):
                 pygame.draw.rect(screen, (0, 0, 255), (x, y, CELL_SIZE, CELL_SIZE))
 
             # pellets
-            elif maze[r, c] == 2:
+            elif draw_pellets and maze[r, c] == 2:
                 rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
-                pygame.draw.circle(screen, (255, 150, 150), rect.center, CELL_SIZE//6)
+                pygame.draw.circle(screen, (255, 150, 150), rect.center, CELL_SIZE // 6)
