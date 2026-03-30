@@ -6,7 +6,11 @@ pygame.init()
 env = PacmanEnv(render_mode="human")
 env.render()
 
-done = False
+clock = pygame.time.Clock()
+
+direction = 3 # start moving right
+running = True
+
 
 key_to_action = {
     pygame.K_UP: 0, 
@@ -14,19 +18,25 @@ key_to_action = {
     pygame.K_LEFT: 2, 
     pygame.K_RIGHT: 3}
 
-while not done:
+while running:
     action = None
-    
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            done = True
-        elif event.type == pygame.KEYDOWN:
-            if event.key in key_to_action:
-                action = key_to_action[event.key]
-    
-    if action is not None:
-        obs, reward, done, info = env.step(action)
-        print(f"Action: {action}, Reward: {reward}, Done: {done}")
+            running = True
+
+        keys = pygame.key.get_pressed()
+
+        for key, action in key_to_action.items():
+            if keys[key]:
+                env.queued_direction = action
+
+    obs, reward, done, info = env.step(direction) 
+
+    if done:
+        running = False
+
+    clock.tick(3)
 
 env.close()
 pygame.quit()

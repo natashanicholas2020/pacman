@@ -22,6 +22,8 @@ class PacmanEnv(gym.Env):
             ("Inky", (0, 255, 255)),
             ("Clyde", (255, 184, 82)),
         ]
+        self.ghost_timer = 0
+        self.ghost_interval = 3 # move ghosts every 3 steps
 
         # Episode control
         self.max_steps = 1000
@@ -75,6 +77,8 @@ class PacmanEnv(gym.Env):
         # Reset step counter
         self.steps = 0
 
+        self.current_direction = 3
+        self.queued_direction = 3
         # Initialize positions
         self.pacman_position = (1, 1)
         self.pellets = set(zip(*np.where(MAZE == 2)))
@@ -107,7 +111,20 @@ class PacmanEnv(gym.Env):
         self.steps += 1
 
         # Move pacman
-        dx, dy = self.actions[action]
+        # reverse option
+        opposite = (self.current_direction + 2) % 4
+        if self.queued_direction == opposite:
+            self.current_direction = self.queued_direction
+            
+        qd = self.queued_direction
+        dx, dy = self.actions[qd]
+        nx = self.pacman_position[0] + dx
+        ny = self.pacman_position[1] + dy
+
+        if (nx, ny) not in self.walls:
+            self.current_direction = qd
+
+        dx, dy = self.actions[self.current_direction]
         nx = self.pacman_position[0] + dx
         ny = self.pacman_position[1] + dy
 
@@ -127,7 +144,10 @@ class PacmanEnv(gym.Env):
             reward = self.rewards['pellet']
 
         # Move ghosts
-        self.move_ghosts()
+        self.ghost_timer += 1
+        if self.ghost_timer >= self.ghost_interval:
+            self.move_ghosts()
+            self.ghost_timer = 0
 
         # ghost collision
         if self.pacman_position in self.ghost_positions.values():
