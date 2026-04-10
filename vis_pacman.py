@@ -1,42 +1,44 @@
 import pygame
 from env.pacman_env import PacmanEnv
+from q_learning import Q_learning
+from q_learning import simplify_state
 
 pygame.init()
 
-env = PacmanEnv(render_mode="human")
-env.render()
+# --- TRAIN ---
+train_env = PacmanEnv(render_mode=None)
+Q = Q_learning(train_env, num_episodes=5000)
+train_env.close()
+
+# --- RUN WITH VISUALS ---
+env = PacmanEnv(render_mode="Human")
+obs, _, _, _ = env.reset()
+state = simplify_state(obs)
+total_reward = 0
 
 clock = pygame.time.Clock()
-
-direction = 3 # start moving right
 running = True
 
-
-key_to_action = {
-    pygame.K_UP: 0, 
-    pygame.K_DOWN: 1, 
-    pygame.K_LEFT: 2, 
-    pygame.K_RIGHT: 3}
+def best_action(state, Q):
+    return max([0,1,2,3], key=lambda a: Q.get((state, a), 0))
 
 while running:
-    action = None
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = True
+            running = False
 
-        keys = pygame.key.get_pressed()
+    action = best_action(state, Q)
 
-        for key, action in key_to_action.items():
-            if keys[key]:
-                env.queued_direction = action
+    obs, reward, done, info = env.step(action)
+    state = simplify_state(obs)
 
-    obs, reward, done, info = env.step(direction) 
+    total_reward += reward
 
     if done:
         running = False
+        print("Final evaluation reward:", total_reward)
 
-    clock.tick(3)
+    clock.tick(5)
 
 env.close()
 pygame.quit()
