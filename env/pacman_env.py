@@ -8,7 +8,7 @@ from game.maze import maze as MAZE
 class PacmanEnv(gym.Env):
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, render_mode=None):
+    def __init__(self, render_mode="Human"):
         super().__init__()
         self.render_mode = render_mode
 
@@ -63,11 +63,11 @@ class PacmanEnv(gym.Env):
 
         # Rewards
         self.rewards = {
-            'pellet': 10,
+            'pellet': 100,
             'ghost': -100,
-            'empty': -1,
-            'win': 500,
-            'oob': -10
+            'empty': -0.1,
+            'win': 2000,
+            'oob': -5
         }
 
         self.reset()
@@ -103,70 +103,42 @@ class PacmanEnv(gym.Env):
 
     def step(self, action):
 
-        ## This is a fix for gym environment.
-        if isinstance(action, str):
-            action = self.actions.index(action)
-
-        # Increment step counter
         self.steps += 1
-
-        # Move pacman
-        # reverse option
-        opposite = (self.current_direction + 2) % 4
-        if self.queued_direction == opposite:
-            self.current_direction = self.queued_direction
-            
-        qd = self.queued_direction
-        dx, dy = self.actions[qd]
-        nx = self.pacman_position[0] + dx
-        ny = self.pacman_position[1] + dy
-
-        if (nx, ny) not in self.walls:
-            self.current_direction = qd
-
-        dx, dy = self.actions[self.current_direction]
-        nx = self.pacman_position[0] + dx
-        ny = self.pacman_position[1] + dy
-
-        reward = self.rewards['empty']
+        reward = self.rewards["empty"]
         terminated = False
 
-        # wall collision
-        if (nx, ny) in self.walls:
-            reward = self.rewards['oob']
-            nx, ny = self.pacman_position
+        # move pacman based ONLY on action
+        dx, dy = self.actions[action]
+        nx, ny = self.pacman_position[0] + dx, self.pacman_position[1] + dy
 
-        self.pacman_position = (nx, ny)
+        if (nx, ny) not in self.walls:
+            self.pacman_position = (nx, ny)
+        else:
+            reward += self.rewards["oob"]
 
         # pellet
         if self.pacman_position in self.pellets:
             self.pellets.remove(self.pacman_position)
-            reward = self.rewards['pellet']
+            reward += self.rewards["pellet"]
 
-        # Move ghosts
+        # ghosts
         self.ghost_timer += 1
         if self.ghost_timer >= self.ghost_interval:
             self.move_ghosts()
             self.ghost_timer = 0
 
-        # ghost collision
+        # collision
         if self.pacman_position in self.ghost_positions.values():
-            reward = self.rewards['ghost']
+            reward += self.rewards["ghost"]
             terminated = True
 
-        # win condition
+        # win
         if len(self.pellets) == 0:
-            reward = self.rewards['win']
+            reward += self.rewards["win"]
             terminated = True
 
-        # Truncate episode if max steps reached and not already done
-        truncated = False
-        if not terminated and self.steps >= self.max_steps:
+        if self.steps >= self.max_steps:
             terminated = True
-            truncated = True
-
-        if self.render_mode == 'human':
-            self.render()
 
         return self.get_observation(), reward, terminated, {}
 
