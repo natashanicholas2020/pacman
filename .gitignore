@@ -1,0 +1,5 @@
+# ignore pycache stuff
+__pycache__/
+
+# ignore pycache in env
+env/__pycache__/
