@@ -63,11 +63,13 @@ class PacmanEnv(gym.Env):
 
         # Rewards
         self.rewards = {
-            'pellet': 100,
-            'ghost': -100,
+            'pellet': 60,
+            'ghost': -1000,
             'empty': -0.1,
-            'win': 2000,
-            'oob': -5
+            'closer': 5,
+            'further': -3,
+            'win': 1000,
+            'oob': -10
         }
 
         self.reset()
@@ -116,6 +118,20 @@ class PacmanEnv(gym.Env):
         else:
             reward += self.rewards["oob"]
 
+        # if moving closer to nearest pellet
+        if self.pellets:
+            nearest_pellet = min(
+                self.pellets,
+                key=lambda p: abs(self.pacman_position[0] - p[0]) + abs(self.pacman_position[1] - p[1])
+            )
+            old_dist = abs(self.pacman_position[0] - nearest_pellet[0]) + abs(self.pacman_position[1] - nearest_pellet[1])
+            new_dist = abs(nx - nearest_pellet[0]) + abs(ny - nearest_pellet[1])
+
+            if new_dist < old_dist:
+                reward += self.rewards["closer"]
+            elif new_dist > old_dist:
+                reward += self.rewards["further"]
+
         # pellet
         if self.pacman_position in self.pellets:
             self.pellets.remove(self.pacman_position)
@@ -146,19 +162,25 @@ class PacmanEnv(gym.Env):
     def move_ghosts(self):
         for ghost in self.ghost_positions:
             gx, gy = self.ghost_positions[ghost]
+            dx, dy = self.ghost_directions[ghost]
 
-            possible_moves = [
-                (gx + dx, gy + dy)
-                for dx, dy in self.actions.values()
-            ]
+            nx, ny = gx + dx, gy + dy
 
-            valid_moves = [
-                move for move in possible_moves
-                if move not in self.walls
-            ]
+            # Redirect if wall
+            if (nx, ny) in self.walls:
+                valid_dirs = []
+                for d in self.actions.values():
+                    tx, ty = gx + d[0], gy + d[1]  
+                    if (tx, ty) not in self.walls:
+                        valid_dirs.append(d)
+                if valid_dirs:
+                    new_dir = random.choice(valid_dirs)
+                    self.ghost_directions[ghost] = new_dir
+                else:
+                    return
+                
+            self.ghost_positions[ghost] = (nx, ny)
 
-            if valid_moves:
-                self.ghost_positions[ghost] = random.choice(valid_moves)
 
     def render(self, mode='human'):
         if not hasattr(self, 'renderer'):

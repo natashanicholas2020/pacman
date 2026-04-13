@@ -16,6 +16,8 @@ obs, _, _, _ = env.reset()
 state = simplify_state(obs)
 total_reward = 0
 
+env.render()
+
 clock = pygame.time.Clock()
 running = True
 
@@ -31,6 +33,8 @@ while running:
 
     obs, reward, done, info = env.step(action)
     state = simplify_state(obs)
+
+    env.render()
 
     total_reward += reward
 
