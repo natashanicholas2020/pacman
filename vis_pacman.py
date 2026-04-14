@@ -7,7 +7,8 @@ pygame.init()
 
 # --- TRAIN ---
 train_env = PacmanEnv(render_mode=None)
-Q = Q_learning(train_env, num_episodes=5000)
+# Q = Q_learning(train_env, num_episodes=10000, gamma=0.9, epsilon=1.0, decay_rate=0.9998, alpha=0.1)
+Q = Q_learning(train_env, num_episodes=10000, gamma=0.9, epsilon=1.0, decay_rate=0.9998, alpha=0.1)
 train_env.close()
 
 # --- RUN WITH VISUALS ---
