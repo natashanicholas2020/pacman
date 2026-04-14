@@ -1,47 +1,101 @@
+"""
+vis_pacman.py  –  train then visualise a greedy episode
+Run:  python vis_pacman.py
+"""
 import pygame
+import numpy as np
 from env.pacman_env import PacmanEnv
-from q_learning import Q_learning
-from q_learning import simplify_state
+from q_learning import Q_learning, simplify_state
 
 pygame.init()
 
-# --- TRAIN ---
+# ── Train ────────────────────────────────────────────────────────────────────
+print("Training …")
 train_env = PacmanEnv(render_mode=None)
-# Q = Q_learning(train_env, num_episodes=10000, gamma=0.9, epsilon=1.0, decay_rate=0.9998, alpha=0.1)
-Q = Q_learning(train_env, num_episodes=10000, gamma=0.9, epsilon=1.0, decay_rate=0.9998, alpha=0.1)
+Q, metrics = Q_learning(
+    train_env,
+    num_episodes=10000,
+    gamma=0.95,
+    epsilon=1.0,
+    decay_rate=0.9998,
+    alpha=0.1,
+)
 train_env.close()
+# -- Softmax exploration (50 episodes) ───────────────────────────────────────────
+def softmax(x, temp=1.0):
+    e_x = np.exp((x - np.max(x)) / temp)
+    return e_x / e_x.sum(axis=0)
 
-# --- RUN WITH VISUALS ---
+print("\nEvaluating (50 softmax episodes) …")
+
+soft_env = PacmanEnv(render_mode=None)
+soft_wins = 0
+soft_rewards = []
+
+for _ in range(50):
+    obs, _, _, _ = soft_env.reset()
+    s = simplify_state(obs)
+    total_r = 0
+    done = False
+    while not done:
+
+        s = simplify_state(obs)
+        try:
+            action = np.random.choice(
+                soft_env.action_space.n, p=softmax(Q[s])
+            )  # Select action using softmax over Q-values
+        except KeyError:
+            action = (
+                soft_env.action_space.sample()
+                )  # Fallback to random action if state not in Q-table
+        
+        obs, r, done, _ = soft_env.step(action)
+        s = simplify_state(obs)
+        total_r += r
+    soft_rewards.append(total_r)
+
+    if sum(obs["pellet_positions"]) == 0:
+        soft_wins += 1
+
+soft_env.close()
+print(f"Softmax win rate : {soft_wins}/50  ({soft_wins * 2}%)")
+print(f"Avg reward      : {round(np.mean(soft_rewards), 1)}")
+
+
+# ── Visual episode ────────────────────────────────────────────────────────────
 env = PacmanEnv(render_mode="Human")
 obs, _, _, _ = env.reset()
-state = simplify_state(obs)
+s = simplify_state(obs)
 total_reward = 0
-
 env.render()
 
 clock = pygame.time.Clock()
 running = True
-
-def best_action(state, Q):
-    return max([0,1,2,3], key=lambda a: Q.get((state, a), 0))
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    action = best_action(state, Q)
-
-    obs, reward, done, info = env.step(action)
-    state = simplify_state(obs)
-
+    try:
+        action = np.random.choice(
+            soft_env.action_space.n, p=softmax(Q[s])
+        )  # Select action using softmax over Q-values
+    except KeyError:
+        action = (
+            soft_env.action_space.sample()
+            ) 
+    # action = best_action(s, Q)  # Greedy action (no exploration)
+    obs, reward, done, _ = env.step(action)
+    s = simplify_state(obs)
     env.render()
-
     total_reward += reward
 
     if done:
+        remaining = sum(obs["pellet_positions"])
+        result = "WIN" if remaining == 0 else "LOSS"
+        print(f"\nVisual episode: {result}  |  reward = {total_reward:.1f}")
         running = False
-        print("Final evaluation reward:", total_reward)
 
     clock.tick(5)
 
