@@ -1,9 +1,11 @@
 import random
 from collections import defaultdict
 import numpy as np
+from collections import deque
+from game.maze import maze
 
 def Q_learning(env, num_episodes=5000, gamma=0.9, epsilon=1.0, decay_rate=0.999, alpha=0.1):
-
+    wins = 0
     Q = defaultdict(float)
     actions = [0, 1, 2, 3]  # fixed action space
 
@@ -38,11 +40,14 @@ def Q_learning(env, num_episodes=5000, gamma=0.9, epsilon=1.0, decay_rate=0.999,
 
             state = next_state
 
+        if len(env.pellets) == 0:
+            wins += 1
         if(episode % 100 == 0):
             print(episode, ":", episode_reward)
 
-        epsilon *= decay_rate
+        epsilon = max(0.05, epsilon * decay_rate)
 
+    print("Total wins during training:", wins)
     return Q
 
 def simplify_state(state):
@@ -61,11 +66,22 @@ def simplify_state(state):
     ghosts = list(state["ghost_positions"].values())
 
     # distance to nearest pellet
-    if pellet_coords:
-        nearest_pellet = min(
-            pellet_coords,
-            key=lambda p: abs(px - p[0]) + abs(py - p[1])
-        )
+    #if pellet_coords:
+    #    nearest_pellet = min(
+    #        pellet_coords,
+    #        key=lambda p: abs(px - p[0]) + abs(py - p[1])
+    #    )
+    #    food_dx = nearest_pellet[0] - px
+    #    food_dy = nearest_pellet[1] - py
+    #else:
+    #    food_dx, food_dy = 0, 0
+    nearest_pellet, dist = find_nearest_pellet(
+        maze,
+        (px, py),
+        pellet_coords
+    )
+
+    if nearest_pellet:
         food_dx = nearest_pellet[0] - px
         food_dy = nearest_pellet[1] - py
     else:
@@ -87,3 +103,32 @@ def simplify_state(state):
         food_dx, food_dy,
         ghost_dx, ghost_dy
     )
+
+def find_nearest_pellet(maze, start, pellets):
+    rows, cols = maze.shape
+    visited = set()
+    queue = deque([(start, 0)])  # ((x, y), distance)
+
+    while queue:
+        (x, y), dist = queue.popleft()
+
+        if (x, y) in visited:
+            continue
+        visited.add((x, y))
+
+        # found a pellet
+        if (x, y) in pellets:
+            return (x, y), dist
+
+        # explore neighbors
+        for dx, dy in [(-1,0),(1,0),(0,-1),(0,1)]:
+            nx, ny = x + dx, y + dy
+
+            if (
+                0 <= nx < rows and
+                0 <= ny < cols and
+                maze[nx][ny] != 1  # not a wall
+            ):
+                queue.append(((nx, ny), dist + 1))
+
+    return None, None

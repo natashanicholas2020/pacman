@@ -7,12 +7,14 @@ pygame.init()
 
 # --- TRAIN ---
 train_env = PacmanEnv(render_mode=None)
-Q = Q_learning(train_env, num_episodes=5000)
+num_episodes = 30000
+Q = Q_learning(train_env, num_episodes)
+print("Training episodes:", num_episodes)
 train_env.close()
 
 # --- RUN WITH VISUALS ---
 env = PacmanEnv(render_mode="Human")
-obs, _, _, _ = env.reset()
+obs, _, _, _ = env.reset() 
 state = simplify_state(obs)
 total_reward = 0
 
