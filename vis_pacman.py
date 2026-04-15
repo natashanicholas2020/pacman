@@ -1,51 +1,3 @@
-# import pygame
-# from env.pacman_env import PacmanEnv
-# from q_learning import Q_learning
-# from q_learning import simplify_state
-
-# pygame.init()
-
-# # --- TRAIN ---
-# train_env = PacmanEnv(render_mode=None)
-# Q = Q_learning(train_env, num_episodes=5000)
-# train_env.close()
-
-# # --- RUN WITH VISUALS ---
-# env = PacmanEnv(render_mode="Human")
-# obs, _, _, _ = env.reset()
-# state = simplify_state(obs)
-# total_reward = 0
-
-# env.render()
-
-# clock = pygame.time.Clock()
-# running = True
-
-# def best_action(state, Q):
-#     return max([0,1,2,3], key=lambda a: Q.get((state, a), 0))
-
-# while running:
-#     for event in pygame.event.get():
-#         if event.type == pygame.QUIT:
-#             running = False
-
-#     action = best_action(state, Q)
-
-#     obs, reward, done, info = env.step(action)
-#     state = simplify_state(obs)
-
-#     env.render()
-
-#     total_reward += reward
-
-#     if done:
-#         running = False
-#         print("Final evaluation reward:", total_reward)
-
-#     clock.tick(5)
-
-# env.close()
-# pygame.quit()
 
 """
 vis_pacman.py  –  train then visualise a greedy episode
@@ -61,7 +13,7 @@ from q_learning import Q_learning, simplify_state
 train_flag = "train" in sys.argv
 gui_flag = "gui" in sys.argv
 
-filename = "Q_table-TASH.pickle"
+filename = "Q_table-KAIT.pickle"
 
 pygame.init()
 
@@ -122,7 +74,7 @@ for _ in range(1000):
         soft_wins += 1
 
 soft_env.close()
-print(f"Softmax win rate : {soft_wins}/1000  ({soft_wins / 1000}%)")
+print(f"Softmax win rate : {soft_wins}/1000  ({(soft_wins / 1000)*100}%)")
 print(f"Avg reward      : {round(np.mean(soft_rewards), 1)}")
 
 
