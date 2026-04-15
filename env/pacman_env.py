@@ -27,6 +27,7 @@ class PacmanEnv(gym.Env):
 
         # Episode control
         self.max_steps = 1000
+        # self.max_steps = 750
         self.steps = 0
 
         # Action Space
@@ -37,6 +38,11 @@ class PacmanEnv(gym.Env):
             3: (0, 1)   # right
         }
         self.action_space = spaces.Discrete(len(self.actions))
+
+        self.box_history = []
+        self.box_limit = 6
+        self.pos_history = []
+        self.pos_limit = 8
 
         # Observation space
         obs_space_dict = {
@@ -66,11 +72,31 @@ class PacmanEnv(gym.Env):
             'pellet': 100,
             'ghost': -500,
             'empty': -0.1,
-            'closer': 3,
-            'further': -2,
+            'closer_to_pellet': 6,
+            'further_from_pellet': -2,
+            'close_to_ghost': -5,
+            'further_from_ghost': 2,
+            'danger_zone': -20,
+            'loitering': -6,
             'win': 2000,
             'oob': -5
         }
+
+        # self.rewards = {
+        #     'pellet': 100,
+        #     'ghost': -500,
+        #     'empty': -0.1,
+        #     'closer_to_pellet': 3,
+        #     'further_from_pellet': -2,
+        #     'close_to_ghost': -20,
+        #     'further_from_ghost': 3,
+        #     'danger_zone': -50,
+        #     'loitering': -40,
+        #     'win': 1000,
+        #     'oob': -30
+        # }
+
+        
 
         self.reset()
 
@@ -78,7 +104,8 @@ class PacmanEnv(gym.Env):
 
         # Reset step counter
         self.steps = 0
-
+        self.box_history = []
+        self.pos_history = []
         self.current_direction = 3
         self.queued_direction = 3
         # Initialize positions
@@ -127,6 +154,20 @@ class PacmanEnv(gym.Env):
 
         new_pos = self.pacman_position
 
+        # loitering penalty
+        box = (self.pacman_position[0] // 2, self.pacman_position[1] // 2)
+        self.box_history.append(box)
+        if len(self.box_history) > self.box_limit:
+            self.box_history.pop(0)
+        if len(self.box_history) == self.box_limit and len(set(self.box_history)) <= 2:
+            reward += self.rewards["loitering"]
+
+        self.pos_history.append(self.pacman_position)
+        if len(self.pos_history) > self.pos_limit:
+            self.pos_history.pop(0)
+        if len(self.pos_history) == self.pos_limit and len(set(self.pos_history)) <= 3:
+            reward += self.rewards["loitering"]
+
         # if moving closer to nearest pellet
         if self.pellets:
             nearest_pellet = min(
@@ -137,15 +178,28 @@ class PacmanEnv(gym.Env):
             new_dist = abs(new_pos[0] - nearest_pellet[0]) + abs(new_pos[1] - nearest_pellet[1])
 
             if new_dist < old_dist:
-                reward += self.rewards["closer"]
+                reward += self.rewards["closer_to_pellet"]
             elif new_dist > old_dist:
-                reward += self.rewards["further"]
+                reward += self.rewards["further_from_pellet"]
 
         # pellet
         if self.pacman_position in self.pellets:
             scaling = np.exp(-0.05 * len(self.pellets))
             self.pellets.remove(self.pacman_position)
             reward += (self.rewards["pellet"] * scaling)
+
+        # ghost proximity
+        nd = min(abs(self.pacman_position[0] - gpos[0]) 
+                 + abs(self.pacman_position[1] - gpos[1]) for gpos in self.ghost_positions.values())
+        od = min(abs(old_pos[0] - gpos[0]) 
+                 + abs(old_pos[1] - gpos[1]) for gpos in self.ghost_positions.values())
+        if nd < od:
+            reward += self.rewards["close_to_ghost"]
+        elif nd > od:
+            reward += self.rewards["further_from_ghost"]
+        if nd <= 3:
+            reward += self.rewards["danger_zone"]
+
 
         # ghosts
         self.ghost_timer += 1
