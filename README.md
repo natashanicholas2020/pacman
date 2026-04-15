@@ -25,7 +25,7 @@ A reinforcement learning project where agents learn to play Pac-Man using Q-lear
 1. Clone the Repository
 
 ```
-   git clone <your-repo-url>
+   git clone https://github.com/natashanicholas2020/pacman.git
    cd <your-repo-folder>
 ```
 
