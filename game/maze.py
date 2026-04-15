@@ -10,7 +10,7 @@ import numpy as np
 # runs — ideal for early training since the agent can charge down corridors
 # without getting blocked.  Pellets are placed at corridor intersections so
 # the agent has clear directional cues.  20 pellets.
-FIXED_MAZE = np.array([
+GRID_CITY = np.array([
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,2,0,0,2,0,0,2,0,0,0,2,0,0,2,0,0,2,1],
     [1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1],
@@ -94,7 +94,7 @@ ORIGINAL_MAZE = np.array([
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ])
 
-maze = MAZE_CATACOMBS
+maze = GRID_CITY
 
 CELL_SIZE = 50
 height, width = maze.shape
