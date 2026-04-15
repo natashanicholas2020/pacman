@@ -12,7 +12,7 @@ from q_learning import Q_learning, simplify_state
 train_flag = "train" in sys.argv
 gui_flag = "gui" in sys.argv
 
-filename = "Q_table-REWARDSX.pickle"
+filename = "MAZE-CATACOMBS-5000.pickle"
 
 
 # ––––––– Plotting metrics –––––––––––––––––––––––––––––––––
@@ -35,7 +35,7 @@ if train_flag:
     train_env = PacmanEnv(render_mode=None)
     Q, metrics = Q_learning(
         train_env,
-        num_episodes=15000,
+        num_episodes=5000,
         gamma=0.85,
         epsilon=1.0,
         decay_rate=0.999,
@@ -47,7 +47,7 @@ if train_flag:
     with open(filename, "wb") as handle:
         pickle.dump(Q, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    plot_rewards(metrics["episode_rewards"], filename="reward_plot.png")
+    # plot_rewards(metrics["episode_rewards"], filename="reward_plot.png")
 
 # -- Softmax exploration (1000 episodes) ───────────────────────────────────────────
 def softmax(x, temp=1.0):

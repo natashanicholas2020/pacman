@@ -67,12 +67,13 @@ class PacmanEnv(gym.Env):
 
         self.observation_space = spaces.Dict(obs_space_dict)
 
+
         # Rewards
         self.rewards = {
             'pellet': 100,
             'ghost': -500,
             'empty': -0.1,
-            'closer_to_pellet': 6,
+            'closer_to_pellet': 10,
             'further_from_pellet': -2,
             'close_to_ghost': -5,
             'further_from_ghost': 2,
@@ -81,20 +82,6 @@ class PacmanEnv(gym.Env):
             'win': 2000,
             'oob': -5
         }
-
-        # self.rewards = {
-        #     'pellet': 100,
-        #     'ghost': -500,
-        #     'empty': -0.1,
-        #     'closer_to_pellet': 3,
-        #     'further_from_pellet': -2,
-        #     'close_to_ghost': -20,
-        #     'further_from_ghost': 3,
-        #     'danger_zone': -50,
-        #     'loitering': -40,
-        #     'win': 1000,
-        #     'oob': -30
-        # }
 
         
 
