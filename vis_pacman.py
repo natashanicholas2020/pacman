@@ -17,13 +17,28 @@ filename = "Q_table-KAIT.pickle"
 
 pygame.init()
 
+# ––––––– Plotting metrics –––––––––––––––––––––––––––––––––
+
+def plot_rewards(rewards, filename="reward_plot.png"):
+    import matplotlib.pyplot as plt
+
+    plt.figure(figsize=(10, 5))
+    plt.scatter(range(len(rewards)), rewards, s=2)
+    plt.xlabel("Episode")
+    plt.ylabel("Total Reward")
+    plt.title("Reward per Episode")
+    plt.grid()
+    plt.savefig(filename)
+    plt.close()
+
+
 # ── Train ────────────────────────────────────────────────────────────────────
 if train_flag:
     print("Training …")
     train_env = PacmanEnv(render_mode=None)
     Q, metrics = Q_learning(
         train_env,
-        num_episodes=10000,
+        num_episodes=15000,
         gamma=0.85,
         epsilon=1.0,
         decay_rate=0.999,
@@ -34,6 +49,8 @@ if train_flag:
     
     with open(filename, "wb") as handle:
         pickle.dump(Q, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    plot_rewards(metrics["episode_rewards"], filename="reward_plot.png")
 
 # -- Softmax exploration (1000 episodes) ───────────────────────────────────────────
 def softmax(x, temp=1.0):
