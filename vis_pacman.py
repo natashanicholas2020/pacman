@@ -33,7 +33,7 @@ if train_flag:
     train_env = PacmanEnv(render_mode=None)
     Q, metrics = Q_learning(
         train_env,
-        num_episodes=5000,
+        num_episodes=15000,
         gamma=0.85,
         epsilon=1.0,
         decay_rate=0.999,
