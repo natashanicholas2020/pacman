@@ -85,7 +85,7 @@ def softmax(x, temp=1.0):
     return e_x / e_x.sum(axis=0)
 
 if eval_flag or gui_flag:
-    eval_episodes = 100
+    eval_episodes = 500
     print(f"\nEvaluating ({eval_episodes} softmax episodes) …")
 
     soft_env = PacmanEnv(render_mode=None)
