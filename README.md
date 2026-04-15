@@ -6,19 +6,19 @@ A reinforcement learning project where agents learn to play Pac-Man using Q-lear
 
 ## Project Structure
 
-.
-├── vis_pacman.py # Main entry point (train, eval, GUI)
-├── q_learning.py # Q-learning implementation
-├── Jazmyn_Model/
-│ └── pacman_env.py # Jazmyn's environment
-├── Kaitlyn_Model/
-│ └── pacman_env.py # Kaitlyn's environment
-├── Natasha_Model/
-│ └── pacman_env.py # Natasha's environment
-├── pickle_files/ # Saved Q-tables
-│ └── \*.pickle
-├── reward_plot.png # (Optional) training visualization
-└── README.md
+.\
+├── vis_pacman.py # Main entry point (train, eval, GUI)\
+├── q_learning.py # Q-learning implementation\
+├── Jazmyn_Model/\
+│ └── pacman_env.py # Jazmyn's environment\
+├── Kaitlyn_Model/\
+│ └── pacman_env.py # Kaitlyn's environment\
+├── Natasha_Model/\
+│ └── pacman_env.py # Natasha's environment\
+├── pickle_files/ # Saved Q-tables\
+│ └── \*.pickle\
+├── reward_plot.png # (Optional) training visualization\
+└── README.md\
 
 ## Setup
 
