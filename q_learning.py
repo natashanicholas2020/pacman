@@ -6,7 +6,8 @@ from game.maze import maze
 
 def Q_learning(env, num_episodes=5000, gamma=0.9, epsilon=1.0, decay_rate=0.999, alpha=0.1):
 
-    Q = defaultdict(float)
+    # Q = defaultdict(float)
+    Q = {}
     actions = [0, 1, 2, 3]  # fixed action space
     num_wins = 0
 
@@ -28,12 +29,14 @@ def Q_learning(env, num_episodes=5000, gamma=0.9, epsilon=1.0, decay_rate=0.999,
         steps = 0
 
         while not done:
-
+            if state not in Q:
+                Q[state] = np.zeros(env.action_space.n) 
             # ε-greedy
+
             if random.random() < epsilon:
                 action = random.choice(actions)
             else:
-                action = max(actions, key=lambda a: Q[(state, a)])
+                action = np.argmax(Q[state])
 
             next_obs, reward, done, info = env.step(action)
             next_state = simplify_state(next_obs)
@@ -41,14 +44,13 @@ def Q_learning(env, num_episodes=5000, gamma=0.9, epsilon=1.0, decay_rate=0.999,
             episode_reward += reward
             steps += 1
 
-            # Q-learning update
-            if done:
-                max_next_Q = 0
-            else:
-                max_next_Q = max(Q[(next_state, a)] for a in actions)
+            if next_state not in Q:
+                Q[next_state] = np.zeros(env.action_space.n)
 
-            Q[(state, action)] += alpha * (
-                reward + gamma * max_next_Q - Q[(state, action)]
+            # Q-learning update
+
+            Q[state][action] += alpha * (
+            reward + gamma * np.max(Q[next_state]) - Q[state][action]
             )
 
             if(reward >= 1000):
@@ -59,7 +61,7 @@ def Q_learning(env, num_episodes=5000, gamma=0.9, epsilon=1.0, decay_rate=0.999,
         #if(episode % 100 == 0):
             #print(episode, ":", episode_reward)
 
-	# ── win detection ──────────────────────────────────────────
+    # ── win detection ──────────────────────────────────────────
         remaining = int(np.sum(next_obs["pellet_positions"]))
         won = (remaining == 0)
 
