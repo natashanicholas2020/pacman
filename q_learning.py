@@ -97,7 +97,7 @@ def Q_learning(env, num_episodes=8000, gamma=0.95, epsilon=1.0,
                 f"ε={epsilon:.4f} | pellets={pellets}"
             )
 
-        epsilon = max(0.05, epsilon * decay_rate)
+        epsilon = max(0.005, epsilon * decay_rate)
 
     # ── final summary ──────────────────────────────────────────────
     total_wins = sum(metrics["win_flags"])

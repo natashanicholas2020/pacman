@@ -2,37 +2,52 @@
 vis_pacman.py  –  train then visualise a greedy episode
 Run:  python vis_pacman.py
 """
+import pickle
+import sys
 import pygame
 import numpy as np
 from env.pacman_env import PacmanEnv
 from q_learning import Q_learning, simplify_state
 
+train_flag = "train" in sys.argv
+gui_flag = "gui" in sys.argv
+
+filename = "Q_table-GRID_CITY.pickle"
+
 pygame.init()
 
 # ── Train ────────────────────────────────────────────────────────────────────
-print("Training …")
-train_env = PacmanEnv(render_mode=None)
-Q, metrics = Q_learning(
-    train_env,
-    num_episodes=10000,
-    gamma=0.95,
-    epsilon=1.0,
-    decay_rate=0.9998,
-    alpha=0.1,
-)
-train_env.close()
-# -- Softmax exploration (50 episodes) ───────────────────────────────────────────
+if train_flag:
+    print("Training …")
+    train_env = PacmanEnv(render_mode=None)
+    Q, metrics = Q_learning(
+        train_env,
+        num_episodes=10000,
+        gamma=0.95,
+        epsilon=1.0,
+        decay_rate=0.9998,
+        alpha=0.1,
+    )
+    train_env.close()
+    # Save the Q-table dict to a file
+    
+    with open(filename, "wb") as handle:
+        pickle.dump(Q, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+# -- Softmax exploration (1000 episodes) ───────────────────────────────────────────
 def softmax(x, temp=1.0):
     e_x = np.exp((x - np.max(x)) / temp)
     return e_x / e_x.sum(axis=0)
 
-print("\nEvaluating (50 softmax episodes) …")
+print("\nEvaluating (1000 softmax episodes) …")
 
 soft_env = PacmanEnv(render_mode=None)
 soft_wins = 0
 soft_rewards = []
 
-for _ in range(50):
+Q_table = np.load(filename, allow_pickle=True)
+
+for _ in range(1000):
     obs, _, _, _ = soft_env.reset()
     s = simplify_state(obs)
     total_r = 0
@@ -42,7 +57,7 @@ for _ in range(50):
         s = simplify_state(obs)
         try:
             action = np.random.choice(
-                soft_env.action_space.n, p=softmax(Q[s])
+                soft_env.action_space.n, p=softmax(Q_table[s])
             )  # Select action using softmax over Q-values
         except KeyError:
             action = (
@@ -58,7 +73,7 @@ for _ in range(50):
         soft_wins += 1
 
 soft_env.close()
-print(f"Softmax win rate : {soft_wins}/50  ({soft_wins * 2}%)")
+print(f"Softmax win rate : {soft_wins}/1000  ({soft_wins / 1000}%)")
 print(f"Avg reward      : {round(np.mean(soft_rewards), 1)}")
 
 
@@ -79,7 +94,7 @@ while running:
 
     try:
         action = np.random.choice(
-            soft_env.action_space.n, p=softmax(Q[s])
+            soft_env.action_space.n, p=softmax(Q_table[s])
         )  # Select action using softmax over Q-values
     except KeyError:
         action = (

@@ -83,20 +83,52 @@ class PacmanEnv(gym.Env):
                 for ghost in self.ghosts
             }),
         })
+        # My Rewards
+        # self.rewards = {
+        #     "ghost":             -1000,
+        #     "win":               1000,
+        #     "pellet":             100,  
+        #     "close_to_pellet":     20,
+        #     "further_from_pellet": -5,
+        #     "close_to_ghost":     -20,
+        #     "further_from_ghost":   3,
+        #     "danger_zone":        -50,  
+        #     "empty":               -1,
+        #     "loitering":          -40,
+        #     "oob":                -30,
+        # }
 
+        # Tash's Rewards
         self.rewards = {
             "ghost":             -500,
-            "win":               1000,
-            "pellet":             100,   # high → eating is the primary goal
-            "close_to_pellet":     20,
-            "further_from_pellet": -5,
-            "close_to_ghost":     -20,
-            "further_from_ghost":   3,
-            "danger_zone":        -50,   # ghost ≤ 3 cells
+            "win":               2000,
+            "pellet":             100,  
+            "close_to_pellet":     1,
+            "further_from_pellet": -1,
+            "close_to_ghost":     -2.5,
+            "further_from_ghost":   6,
+            "danger_zone":        -25,  
             "empty":               -1,
-            "loitering":          -40,
-            "oob":                -30,
+            "loitering":          -20,
+            "oob":                -5,
         }
+        
+        # Kait's Rewards
+        # self.rewards = {
+        #     "ghost":             -500,
+        #     "win":               2000,
+        #     "pellet":             100,  
+        #     "close_to_pellet":     3,
+        #     "further_from_pellet": -2,
+        #     "close_to_ghost":     -2.5,
+        #     "further_from_ghost":   6,
+        #     "danger_zone":        -25,  
+        #     "empty":               -0.1,
+        #     "loitering":          -20,
+        #     "oob":                -5,
+        # }
+
+        
 
         self.reset()
 
